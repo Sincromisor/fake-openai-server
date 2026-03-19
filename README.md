@@ -127,7 +127,7 @@ $ curl -v http://127.0.0.1:8081/v1/embeddings -H 'Content-Type: application/json
 ### Rerankサーバーの起動
 
 ```sh
-$ uv run uvicorn rerank-api-server:app --host 0.0.0.0 --port 8082
+$ uv run uvicorn reranker-api-server:app --host 0.0.0.0 --port 8082
 ```
 
 Docker Composeの場合は不要です。
