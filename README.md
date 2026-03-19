@@ -14,7 +14,7 @@ OpenAI-API-compatibleモデルプロバイダーでこれを指定します。
 `.env` で利用モデルを切り替えられます。`docker compose` とローカル直接実行のどちらでも同じ設定を使えます。
 
 ```sh
-$ cp .env.example .env
+cp .env.example .env
 ```
 
 ```dotenv
@@ -28,20 +28,20 @@ RERANKER_MODEL_NAME=cl-nagoya/ruri-v3-reranker-310m
   - Text embeddings: GPU VRAM1.5GB程度
   - Rerank: GPU VRAM1.5GB程度
 
-
 ## Docker Composeで実行する場合
 
 buildしてupするだけです。
 
 ```sh
-$ cp .env.example .env
-$ docker compose build
-$ docker compose up -d
+cp .env.example .env
+docker compose build
+docker compose up -d
 ```
+
 モデルのキャッシュはホストの`volumes`ディレクトリに保持されます。
 
-
 ## Dockerなしで実行したい場合
+
 ### パッケージのインストール
 
 ```sh
@@ -52,26 +52,24 @@ $ sudo apt install \
        libsentencepiece-dev
 ```
 
-
 ### Pythonライブラリのインストール
+
 ライブラリの管理は[uv](https://github.com/astral-sh/uv)を用います。
 
 ```sh
-$ uv sync
+uv sync
 ```
-
 
 ## つかいかた(Text embeddings)
 
 ### Text embeddingサーバーの起動
 
 ```sh
-$ cp .env.example .env
-$ uv run uvicorn embeddings-api-server:app --host 0.0.0.0 --port 8081
+cp .env.example .env
+uv run uvicorn embeddings-api-server:app --host 0.0.0.0 --port 8081
 ```
 
 Docker Composeの場合は不要です。
-
 
 ### Text embeddingサーバーの動作テスト
 
@@ -125,27 +123,25 @@ $ curl -v http://127.0.0.1:8081/v1/embeddings -H 'Content-Type: application/json
 }
 ```
 
-
 ### Difyでの設定
 
 - Model Type: Text Embedding
 - Model Name: cl-nagoya/ruri-v3-310m
 - API Key: なし
-- API endpoint URL: http://サーバーのホスト名・IPアドレス:8081/v1
-- Model context size: 512
-
+- API endpoint URL: <http://サーバーのホスト名・IPアドレス:8081/v1>
+- Model context size: 8192(`cl-nagoya/ruri-v3-310m`の場合)
+- Output Dimensionality: 768(`cl-nagoya/ruri-v3-310m`の場合)
 
 ## つかいかた(Rerank)
 
 ### Rerankサーバーの起動
 
 ```sh
-$ cp .env.example .env
-$ uv run uvicorn reranker-api-server:app --host 0.0.0.0 --port 8082
+cp .env.example .env
+uv run uvicorn reranker-api-server:app --host 0.0.0.0 --port 8082
 ```
 
 Docker Composeの場合は不要です。
-
 
 ### Rerankサーバーの動作テスト
 
@@ -194,11 +190,10 @@ $ curl -v http://127.0.0.1:8082/v1/rerank -H 'Content-Type: application/json' --
 }
 ```
 
-
 ### Difyでの設定
 
 - Model Type: Rerank
 - Model Name: cl-nagoya/ruri-v3-reranker-310m
 - API Key: なし
-- API endpoint URL: http://サーバーのホスト名・IPアドレス:8082/v1
-- Model context size: 512
+- API endpoint URL: <http://サーバーのホスト名・IPアドレス:8082/v1>
+- Model context size: 8192(`ruri-v3-reranker-310m`の場合)
