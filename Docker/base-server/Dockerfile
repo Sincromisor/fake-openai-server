@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04 AS builder
+FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04 AS builder
 
 ARG FOS_USER_ID=fos
 ARG FOS_USER_DIR=/opt/fos
@@ -11,11 +11,11 @@ RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     --mount=type=cache,target=/var/cache/apt/archives,sharing=locked \
     apt-get update \
     && apt-get install -y \
-       curl \
-       build-essential \
-       cmake pkg-config \
-       libprotobuf-dev \
-       libsentencepiece-dev
+    curl \
+    build-essential \
+    cmake pkg-config \
+    libprotobuf-dev \
+    libsentencepiece-dev
 
 RUN useradd -u 1001 -s /bin/bash -d ${FOS_USER_DIR} ${FOS_USER_ID} && \
     mkdir -p ${FOS_USER_DIR} && \
