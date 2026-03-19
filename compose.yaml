@@ -14,6 +14,8 @@ services:
       context: .
       dockerfile: ./Docker/embeddings-server/Dockerfile
     image: fake-openai-server/embeddings-server:latest
+    environment:
+      EMBEDDINGS_MODEL_NAME: ${EMBEDDINGS_MODEL_NAME:-cl-nagoya/ruri-v3-310m}
     ports:
       - 8081:8081/tcp
     volumes:
@@ -39,6 +41,8 @@ services:
       context: .
       dockerfile: ./Docker/reranker-server/Dockerfile
     image: fake-openai-server/reranker-server:latest
+    environment:
+      RERANKER_MODEL_NAME: ${RERANKER_MODEL_NAME:-cl-nagoya/ruri-v3-reranker-310m}
     ports:
       - 8082:8082/tcp
     volumes:

@@ -2,8 +2,10 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
 from sentence_transformers import CrossEncoder
+from dotenv import load_dotenv
 import logging
 import logging.config
+import os
 from logging import Logger
 from LoggerConfig import LoggerConfig
 
@@ -13,8 +15,14 @@ logging.config.dictConfig(
 logger: Logger = logging.getLogger("rerank-api-server")
 logger.setLevel(logging.INFO)
 
+load_dotenv()
+
+reranker_model_name = os.getenv(
+    "RERANKER_MODEL_NAME", "cl-nagoya/ruri-v3-reranker-310m"
+)
+
 app = FastAPI()
-reranker = CrossEncoder("cl-nagoya/ruri-reranker-large")
+reranker = CrossEncoder(reranker_model_name)
 
 
 class ReRankRequest(BaseModel):

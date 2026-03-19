@@ -2,9 +2,11 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Union
 from sentence_transformers import SentenceTransformer
+from dotenv import load_dotenv
 
 import logging
 import logging.config
+import os
 from logging import Logger
 from LoggerConfig import LoggerConfig
 
@@ -14,8 +16,12 @@ logging.config.dictConfig(
 logger: Logger = logging.getLogger("embedding-api-server")
 logger.setLevel(logging.INFO)
 
+load_dotenv()
+
+embedding_model_name = os.getenv("EMBEDDINGS_MODEL_NAME", "cl-nagoya/ruri-v3-310m")
+
 app = FastAPI()
-model = SentenceTransformer("cl-nagoya/ruri-large")
+model = SentenceTransformer(embedding_model_name)
 
 
 class EmbeddingRequest(BaseModel):
