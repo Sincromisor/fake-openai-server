@@ -25,7 +25,7 @@
 - [x] Task 1: ディレクトリ構成の再整理
 - [x] Task 2: `pyproject.toml` の整備
 - [x] Task 3: 設定管理の型付き化
-- [ ] Task 4: sentence-transformers のアクセラレーターデバイス設定対応
+- [x] Task 4: sentence-transformers のアクセラレーターデバイス設定対応
 - [x] Task 5: FastAPI アプリケーション構成の見直し
 - [x] Task 6: リクエスト・レスポンススキーマの明確化
 - [x] Task 7: エラーハンドリングの標準化
@@ -37,9 +37,9 @@
 - [x] Task 13: rerank API のテスト追加
 - [x] Task 14: compose ベースの検証手順整備
 - [x] Task 15: 開発者コマンドの標準化
-- [ ] Task 16: CI 設計の追加
+- [x] Task 16: CI 設計の追加
 - [x] Task 17: README の全面更新
-- [ ] Task 18: コミット・レビュー運用文書の追加
+- [x] Task 18: コミット・レビュー運用文書の追加
 
 ## タスク詳細
 

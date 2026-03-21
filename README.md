@@ -187,6 +187,8 @@ uv run pytest
 docker compose config
 ```
 
+コミットとレビューの運用は [documents/commit-review.md](documents/commit-review.md) にまとめています。
+
 ## Dify での利用例
 
 Embeddings:
