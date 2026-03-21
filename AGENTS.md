@@ -60,7 +60,7 @@ update both in the same task when feasible.
 - Keep `pyproject.toml` and `uv.lock` consistent.
 - Use `ruff` for linting and formatting checks.
 - Use `ty` for type checking when configured in the repository.
-- Use `markdownlint` to check Markdown files.
+- Use `markdownlint-cli2` to check Markdown files.
 
 ### Typing
 
