@@ -11,7 +11,8 @@ OpenAI-API-compatibleモデルプロバイダーでこれを指定します。
 - Text embedding: [cl-nagoya/ruri-v3-310m](https://huggingface.co/cl-nagoya/ruri-v3-310m)
 - Rerank: [cl-nagoya/ruri-v3-reranker-310m](https://huggingface.co/cl-nagoya/ruri-v3-reranker-310m)
 
-`.env` で利用モデルを切り替えられます。`docker compose` とローカル直接実行のどちらでも同じ設定を使えます。
+`.env` で利用モデルを切り替えられます。
+`docker compose` とローカル直接実行のどちらでも同じ設定を使えます。
 
 ```sh
 cp .env.example .env
@@ -74,7 +75,9 @@ Docker Composeの場合は不要です。
 ### Text embeddingサーバーの動作テスト
 
 ```sh
-$ curl -v http://127.0.0.1:8081/v1/embeddings -H 'Content-Type: application/json' --data-raw '
+$ curl -v http://127.0.0.1:8081/v1/embeddings \
+    -H 'Content-Type: application/json' \
+    --data-raw '
 {
     "model": "cl-nagoya/ruri-v3-310m",
     "input": [
@@ -123,7 +126,7 @@ $ curl -v http://127.0.0.1:8081/v1/embeddings -H 'Content-Type: application/json
 }
 ```
 
-### Difyでの設定
+### Difyでの設定(Text embeddings)
 
 - Model Type: Text Embedding
 - Model Name: cl-nagoya/ruri-v3-310m
@@ -146,7 +149,9 @@ Docker Composeの場合は不要です。
 ### Rerankサーバーの動作テスト
 
 ```sh
-$ curl -v http://127.0.0.1:8082/v1/rerank -H 'Content-Type: application/json' --data-raw '
+$ curl -v http://127.0.0.1:8082/v1/rerank \
+    -H 'Content-Type: application/json' \
+    --data-raw '
 {
     "model": "cl-nagoya/ruri-v3-reranker-310m",
     "query": "山形県の蔵王温泉にある「泉質」はなに？",
@@ -190,7 +195,7 @@ $ curl -v http://127.0.0.1:8082/v1/rerank -H 'Content-Type: application/json' --
 }
 ```
 
-### Difyでの設定
+### Difyでの設定(Rerank)
 
 - Model Type: Rerank
 - Model Name: cl-nagoya/ruri-v3-reranker-310m
