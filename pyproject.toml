@@ -16,6 +16,10 @@ dependencies = [
     "uvicorn>=0.34.0",
 ]
 
+[project.scripts]
+fake-openai-embeddings = "fake_openai_server.asgi:run_embeddings"
+fake-openai-reranker = "fake_openai_server.asgi:run_reranker"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

@@ -5,4 +5,4 @@ COPY --chown=fos:fos \
     /opt/fos/src
 
 USER fos
-CMD ["sh", "-c", "uv run uvicorn fake_openai_server.main.reranker:app --host ${RERANKER_HOST:-0.0.0.0} --port ${RERANKER_PORT:-8082}"]
+CMD ["uv", "run", "fake-openai-reranker"]

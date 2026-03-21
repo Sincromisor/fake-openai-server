@@ -6,4 +6,4 @@ COPY --chown=fos:fos \
 
 
 USER fos
-CMD ["sh", "-c", "uv run uvicorn fake_openai_server.main.embeddings:app --host ${EMBEDDINGS_HOST:-0.0.0.0} --port ${EMBEDDINGS_PORT:-8081}"]
+CMD ["uv", "run", "fake-openai-embeddings"]

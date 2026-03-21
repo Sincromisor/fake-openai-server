@@ -17,9 +17,13 @@ AI agents working in this repository must optimize for:
 
 ## Current Architecture
 
-- `embeddings-api-server.py`: FastAPI application for `/v1/embeddings`
-- `reranker-api-server.py`: FastAPI application for `/v1/rerank`
-- `LoggerConfig.py`: shared logging configuration
+- `src/fake_openai_server/app.py`: FastAPI application factories
+- `src/fake_openai_server/asgi.py`: ASGI factories and runtime entrypoints
+- `src/fake_openai_server/api/routers/`: API router modules
+- `src/fake_openai_server/schemas/`: request and response schemas
+- `src/fake_openai_server/services/`: model initialization and inference services
+- `src/fake_openai_server/config.py`: typed runtime settings
+- `src/fake_openai_server/logging.py`: shared logging configuration
 - `compose.yaml`: canonical local orchestration entrypoint
 - `Docker/`: container build definitions
 - `pyproject.toml` and `uv.lock`: Python dependency management via `uv`

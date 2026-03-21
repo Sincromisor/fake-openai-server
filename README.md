@@ -17,6 +17,8 @@ OpenAI API 互換の embeddings サーバーと rerank サーバーを、
 
 - `src/fake_openai_server/app.py`
   - FastAPI アプリケーションファクトリ
+- `src/fake_openai_server/asgi.py`
+  - ASGI factory と CLI エントリポイント
 - `src/fake_openai_server/config.py`
   - `pydantic-settings` ベースの型付き設定
 - `src/fake_openai_server/api/routers/`
@@ -96,17 +98,13 @@ uv sync --group dev
 embeddings サーバー:
 
 ```sh
-uv run uvicorn fake_openai_server.main.embeddings:app \
-  --host "${EMBEDDINGS_HOST:-0.0.0.0}" \
-  --port "${EMBEDDINGS_PORT:-8081}"
+uv run fake-openai-embeddings
 ```
 
 reranker サーバー:
 
 ```sh
-uv run uvicorn fake_openai_server.main.reranker:app \
-  --host "${RERANKER_HOST:-0.0.0.0}" \
-  --port "${RERANKER_PORT:-8082}"
+uv run fake-openai-reranker
 ```
 
 ## ヘルスチェック
