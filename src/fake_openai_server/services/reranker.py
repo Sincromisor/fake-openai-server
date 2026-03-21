@@ -24,12 +24,15 @@ class SupportsRerankerModel(Protocol):
         """Predict relevance scores for query-document pairs."""
 
 
-def load_cross_encoder(model_name: str) -> SupportsRerankerModel:
+def load_cross_encoder(
+    model_name: str,
+    device: str,
+) -> SupportsRerankerModel:
     """Load the default sentence-transformer reranker backend."""
 
     from sentence_transformers import CrossEncoder
 
-    return cast(SupportsRerankerModel, CrossEncoder(model_name))
+    return cast(SupportsRerankerModel, CrossEncoder(model_name, device=device))
 
 
 class RerankerService:
@@ -39,9 +42,11 @@ class RerankerService:
         self,
         *,
         model_name: str,
-        model_loader: Callable[[str], SupportsRerankerModel] = load_cross_encoder,
+        device: str,
+        model_loader: Callable[[str, str], SupportsRerankerModel] = load_cross_encoder,
     ) -> None:
         self.model_name = model_name
+        self.device = device
         self._model_loader = model_loader
         self._model: SupportsRerankerModel | None = None
         self._logger = logging.getLogger("fake_openai_server.reranker")
@@ -52,14 +57,20 @@ class RerankerService:
         started_at = time.perf_counter()
         self._logger.info(
             "Loading reranker model",
-            extra={"extra_data": {"model_name": self.model_name}},
+            extra={
+                "extra_data": {
+                    "model_name": self.model_name,
+                    "device": self.device,
+                }
+            },
         )
-        self._model = self._model_loader(self.model_name)
+        self._model = self._model_loader(self.model_name, self.device)
         self._logger.info(
             "Reranker model loaded",
             extra={
                 "extra_data": {
                     "model_name": self.model_name,
+                    "device": self.device,
                     "duration_ms": round((time.perf_counter() - started_at) * 1000, 3),
                 }
             },
@@ -82,6 +93,7 @@ class RerankerService:
             extra={
                 "extra_data": {
                     "model_name": self.model_name,
+                    "device": self.device,
                     "document_count": len(request.documents),
                 }
             },
@@ -107,6 +119,7 @@ class RerankerService:
             extra={
                 "extra_data": {
                     "model_name": self.model_name,
+                    "device": self.device,
                     "document_count": len(request.documents),
                     "result_count": len(ranked),
                     "duration_ms": round((time.perf_counter() - started_at) * 1000, 3),

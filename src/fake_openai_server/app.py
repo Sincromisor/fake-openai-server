@@ -31,7 +31,10 @@ def create_embeddings_app(
         json_logs=settings.log_json,
         log_file=settings.log_file,
     )
-    embeddings_service = service or EmbeddingsService(model_name=settings.model_name)
+    embeddings_service = service or EmbeddingsService(
+        model_name=settings.model_name,
+        device=settings.device,
+    )
     app = FastAPI(
         title="Fake OpenAI Embeddings API",
         description="OpenAI-compatible local embeddings API server.",
@@ -71,7 +74,10 @@ def create_reranker_app(
         json_logs=settings.log_json,
         log_file=settings.log_file,
     )
-    reranker_service = service or RerankerService(model_name=settings.model_name)
+    reranker_service = service or RerankerService(
+        model_name=settings.model_name,
+        device=settings.device,
+    )
     app = FastAPI(
         title="Fake OpenAI Rerank API",
         description="OpenAI-compatible local rerank API server.",

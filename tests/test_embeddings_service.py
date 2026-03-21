@@ -39,9 +39,17 @@ class FakeEmbeddingsModel:
 def test_embeddings_service_startup_and_create_embedding() -> None:
     """The service should load the model and return OpenAI-compatible embeddings."""
 
+    captured_loader_calls: list[tuple[str, str]] = []
+
     service = EmbeddingsService(
         model_name="test-model",
-        model_loader=lambda _: FakeEmbeddingsModel([[0.1, 0.2], [0.3, 0.4]]),
+        device="cpu",
+        model_loader=lambda model_name, device: _capture_embeddings_loader_call(
+            captured_loader_calls,
+            model_name,
+            device,
+            FakeEmbeddingsModel([[0.1, 0.2], [0.3, 0.4]]),
+        ),
     )
 
     service.startup()
@@ -50,6 +58,7 @@ def test_embeddings_service_startup_and_create_embedding() -> None:
     )
 
     assert service.is_ready() is True
+    assert captured_loader_calls == [("test-model", "cpu")]
     assert response.model == "test-model"
     assert response.data[0].embedding == [0.1, 0.2]
     assert response.data[1].index == 1
@@ -61,7 +70,8 @@ def test_embeddings_service_requires_startup_before_inference() -> None:
 
     service = EmbeddingsService(
         model_name="test-model",
-        model_loader=lambda _: FakeEmbeddingsModel([[0.1, 0.2]]),
+        device="cpu",
+        model_loader=lambda _, __: FakeEmbeddingsModel([[0.1, 0.2]]),
     )
 
     try:
@@ -86,7 +96,8 @@ def test_embeddings_service_wraps_model_failures() -> None:
 
     service = EmbeddingsService(
         model_name="test-model",
-        model_loader=lambda _: BrokenEmbeddingsModel(),
+        device="cpu",
+        model_loader=lambda _, __: BrokenEmbeddingsModel(),
     )
     service.startup()
 
@@ -96,3 +107,15 @@ def test_embeddings_service_wraps_model_failures() -> None:
         pass
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("InferenceError was not raised")
+
+
+def _capture_embeddings_loader_call(
+    calls: list[tuple[str, str]],
+    model_name: str,
+    device: str,
+    model: FakeEmbeddingsModel,
+) -> FakeEmbeddingsModel:
+    """Record loader arguments and return the fake model."""
+
+    calls.append((model_name, device))
+    return model

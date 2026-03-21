@@ -6,6 +6,8 @@ from typing import Literal
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from fake_openai_server.runtime import AcceleratorDevice
+
 
 class BaseServiceSettings(BaseSettings):
     """Shared runtime settings for each API service."""
@@ -19,6 +21,7 @@ class BaseServiceSettings(BaseSettings):
 
     host: str
     port: int = Field(ge=1, le=65535)
+    device: AcceleratorDevice
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     log_json: bool = True
     log_file: str | None = None
@@ -30,6 +33,10 @@ class EmbeddingsSettings(BaseServiceSettings):
     model_name: str = Field(min_length=1, validation_alias="EMBEDDINGS_MODEL_NAME")
     host: str = Field(default="0.0.0.0", validation_alias="EMBEDDINGS_HOST")
     port: int = Field(default=8081, validation_alias="EMBEDDINGS_PORT", ge=1, le=65535)
+    device: AcceleratorDevice = Field(
+        default="cuda",
+        validation_alias="EMBEDDINGS_DEVICE",
+    )
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO",
         validation_alias="EMBEDDINGS_LOG_LEVEL",
@@ -44,6 +51,10 @@ class RerankerSettings(BaseServiceSettings):
     model_name: str = Field(min_length=1, validation_alias="RERANKER_MODEL_NAME")
     host: str = Field(default="0.0.0.0", validation_alias="RERANKER_HOST")
     port: int = Field(default=8082, validation_alias="RERANKER_PORT", ge=1, le=65535)
+    device: AcceleratorDevice = Field(
+        default="cuda",
+        validation_alias="RERANKER_DEVICE",
+    )
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO",
         validation_alias="RERANKER_LOG_LEVEL",

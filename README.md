@@ -59,17 +59,21 @@ cp .env.example .env
 EMBEDDINGS_MODEL_NAME=cl-nagoya/ruri-v3-310m
 EMBEDDINGS_HOST=0.0.0.0
 EMBEDDINGS_PORT=8081
+EMBEDDINGS_DEVICE=cuda
 EMBEDDINGS_LOG_LEVEL=INFO
 EMBEDDINGS_LOG_JSON=true
 
 RERANKER_MODEL_NAME=cl-nagoya/ruri-v3-reranker-310m
 RERANKER_HOST=0.0.0.0
 RERANKER_PORT=8082
+RERANKER_DEVICE=cuda
 RERANKER_LOG_LEVEL=INFO
 RERANKER_LOG_JSON=true
 ```
 
 設定値が不足または不正な場合、起動時に明示的に失敗します。
+`*_DEVICE` には `cpu`、`mps`、`cuda`、`cuda:0` のような値を指定できます。
+Apple Silicon のローカル検証では `mps`、GPU を使わない環境では `cpu` が便利です。
 
 ## Docker Compose で起動する
 

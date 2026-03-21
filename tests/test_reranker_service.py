@@ -21,9 +21,17 @@ class FakeRerankerModel:
 def test_reranker_service_startup_and_rerank() -> None:
     """The service should load the model and return sorted rerank results."""
 
+    captured_loader_calls: list[tuple[str, str]] = []
+
     service = RerankerService(
         model_name="test-model",
-        model_loader=lambda _: FakeRerankerModel([0.2, 0.9, 0.4]),
+        device="cpu",
+        model_loader=lambda model_name, device: _capture_reranker_loader_call(
+            captured_loader_calls,
+            model_name,
+            device,
+            FakeRerankerModel([0.2, 0.9, 0.4]),
+        ),
     )
 
     service.startup()
@@ -37,6 +45,7 @@ def test_reranker_service_startup_and_rerank() -> None:
     )
 
     assert service.is_ready() is True
+    assert captured_loader_calls == [("test-model", "cpu")]
     assert [result.document.text for result in response.results] == ["b", "c"]
     assert [result.index for result in response.results] == [1, 2]
     assert response.usage.total_tokens == 0
@@ -47,7 +56,8 @@ def test_reranker_service_requires_startup_before_inference() -> None:
 
     service = RerankerService(
         model_name="test-model",
-        model_loader=lambda _: FakeRerankerModel([0.1]),
+        device="cpu",
+        model_loader=lambda _, __: FakeRerankerModel([0.1]),
     )
 
     try:
@@ -69,7 +79,8 @@ def test_reranker_service_wraps_model_failures() -> None:
 
     service = RerankerService(
         model_name="test-model",
-        model_loader=lambda _: BrokenRerankerModel(),
+        device="cpu",
+        model_loader=lambda _, __: BrokenRerankerModel(),
     )
     service.startup()
 
@@ -81,3 +92,15 @@ def test_reranker_service_wraps_model_failures() -> None:
         pass
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("InferenceError was not raised")
+
+
+def _capture_reranker_loader_call(
+    calls: list[tuple[str, str]],
+    model_name: str,
+    device: str,
+    model: FakeRerankerModel,
+) -> FakeRerankerModel:
+    """Record loader arguments and return the fake model."""
+
+    calls.append((model_name, device))
+    return model

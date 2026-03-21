@@ -50,10 +50,11 @@ def test_embeddings_api_exposes_openapi_health_and_inference() -> None:
     """The embeddings app should expose the contract, health probes, and endpoint."""
 
     app = create_embeddings_app(
-        EmbeddingsSettings(model_name="test-embedding-model"),
+        EmbeddingsSettings(model_name="test-embedding-model", device="cpu"),
         service=EmbeddingsService(
             model_name="test-embedding-model",
-            model_loader=lambda _: FakeEmbeddingsModel(),
+            device="cpu",
+            model_loader=lambda _, __: FakeEmbeddingsModel(),
         ),
     )
 
@@ -79,10 +80,11 @@ def test_embeddings_api_returns_openai_style_validation_error() -> None:
     """Invalid embeddings input should return the shared error shape."""
 
     app = create_embeddings_app(
-        EmbeddingsSettings(model_name="test-embedding-model"),
+        EmbeddingsSettings(model_name="test-embedding-model", device="cpu"),
         service=EmbeddingsService(
             model_name="test-embedding-model",
-            model_loader=lambda _: FakeEmbeddingsModel(),
+            device="cpu",
+            model_loader=lambda _, __: FakeEmbeddingsModel(),
         ),
     )
 
@@ -101,10 +103,11 @@ def test_rerank_api_returns_ranked_results() -> None:
     """The rerank app should expose readiness and sorted ranking results."""
 
     app = create_reranker_app(
-        RerankerSettings(model_name="test-reranker-model"),
+        RerankerSettings(model_name="test-reranker-model", device="cpu"),
         service=RerankerService(
             model_name="test-reranker-model",
-            model_loader=lambda _: FakeRerankerModel(),
+            device="cpu",
+            model_loader=lambda _, __: FakeRerankerModel(),
         ),
     )
 
@@ -136,10 +139,11 @@ def test_rerank_api_returns_openai_style_internal_error() -> None:
             raise RuntimeError("boom")
 
     app = create_reranker_app(
-        RerankerSettings(model_name="test-reranker-model"),
+        RerankerSettings(model_name="test-reranker-model", device="cpu"),
         service=RerankerService(
             model_name="test-reranker-model",
-            model_loader=lambda _: BrokenRerankerModel(),
+            device="cpu",
+            model_loader=lambda _, __: BrokenRerankerModel(),
         ),
     )
 
