@@ -1,8 +1,8 @@
 FROM fake-openai-server/base-server:latest
 
 COPY --chown=fos:fos \
-    ./LoggerConfig.py \
-    ./reranker-api-server.py /opt/fos/
+    ./src \
+    /opt/fos/src
 
 USER fos
-CMD ["uv", "run", "uvicorn", "reranker-api-server:app", "--host", "0.0.0.0", "--port", "8082"]
+CMD ["sh", "-c", "uv run uvicorn fake_openai_server.main.reranker:app --host ${RERANKER_HOST:-0.0.0.0} --port ${RERANKER_PORT:-8082}"]

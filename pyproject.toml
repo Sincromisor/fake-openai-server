@@ -1,16 +1,57 @@
 [project]
 name = "fake-openai-server"
 version = "0.1.0"
-description = "Add your description here"
+description = "OpenAI API-compatible local servers for embeddings and rerank workloads."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "python-dotenv>=1.0.1",
     "fastapi>=0.115.8",
     "fugashi>=1.4.0",
     "pydantic>=2.10.6",
+    "pydantic-settings>=2.8.1",
+    "python-dotenv>=1.0.1",
     "sentence-transformers>=3.4.1",
     "sentencepiece>=0.2.0",
     "unidic-lite>=1.0.8",
     "uvicorn>=0.34.0",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=8.3.4",
+    "ruff>=0.11.0",
+    "ty>=0.0.1a19",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fake_openai_server"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "B",
+    "E",
+    "F",
+    "I",
+    "UP",
+]
+
+[tool.ty.environment]
+python-version = "3.13"
+root = ["./src"]
+
+[tool.ty.src]
+include = ["src", "tests"]

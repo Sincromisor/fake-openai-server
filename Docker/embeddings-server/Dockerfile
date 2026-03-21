@@ -1,9 +1,9 @@
 FROM fake-openai-server/base-server:latest
 
 COPY --chown=fos:fos \
-    ./LoggerConfig.py \
-    ./embeddings-api-server.py /opt/fos/
+    ./src \
+    /opt/fos/src
 
 
 USER fos
-CMD ["uv", "run", "uvicorn", "embeddings-api-server:app", "--host", "0.0.0.0", "--port", "8081"]
+CMD ["sh", "-c", "uv run uvicorn fake_openai_server.main.embeddings:app --host ${EMBEDDINGS_HOST:-0.0.0.0} --port ${EMBEDDINGS_PORT:-8081}"]

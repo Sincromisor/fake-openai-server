@@ -1,37 +1,75 @@
-# fake-open-ai-server
+# fake-openai-server
 
-OpenAI API互換のText embeddingsサーバーと、
-Rerankサーバーをローカルで提供します。
+OpenAI API 互換の embeddings サーバーと rerank サーバーを、
+ローカル環境で提供する FastAPI ベースのプロジェクトです。
 
-[Dify](https://dify.ai/)で日本語の処理をおこないたい際に、
-OpenAI-API-compatibleモデルプロバイダーでこれを指定します。
+既定では次のモデルを利用します。
 
-デフォルトでは次のモデルを利用します。
-
-- Text embedding: [cl-nagoya/ruri-v3-310m](https://huggingface.co/cl-nagoya/ruri-v3-310m)
+- Embeddings: [cl-nagoya/ruri-v3-310m](https://huggingface.co/cl-nagoya/ruri-v3-310m)
 - Rerank: [cl-nagoya/ruri-v3-reranker-310m](https://huggingface.co/cl-nagoya/ruri-v3-reranker-310m)
 
-`.env` で利用モデルを切り替えられます。
-`docker compose` とローカル直接実行のどちらでも同じ設定を使えます。
+このリポジトリは stateless です。
+データベースは使わず、`docker compose` を正規の起動経路として扱います。
+
+## 構成
+
+主要なコードは `src/fake_openai_server/` 配下にあります。
+
+- `src/fake_openai_server/app.py`
+  - FastAPI アプリケーションファクトリ
+- `src/fake_openai_server/config.py`
+  - `pydantic-settings` ベースの型付き設定
+- `src/fake_openai_server/api/routers/`
+  - embeddings / rerank / health の各ルータ
+- `src/fake_openai_server/services/`
+  - モデル初期化と推論ロジック
+- `src/fake_openai_server/schemas/`
+  - request / response / error の pydantic スキーマ
+
+## 必要なもの
+
+- NVIDIA GPU を利用できる環境
+- [uv](https://docs.astral.sh/uv/)
+- `docker compose`
+
+ローカル直接実行では、`sentencepiece` などのビルド依存が必要です。
+
+```sh
+sudo apt install \
+  build-essential \
+  cmake \
+  pkg-config \
+  libprotobuf-dev \
+  libsentencepiece-dev
+```
+
+## 設定
+
+`.env.example` をコピーして使います。
 
 ```sh
 cp .env.example .env
 ```
 
+利用する主な環境変数は次のとおりです。
+
 ```dotenv
 EMBEDDINGS_MODEL_NAME=cl-nagoya/ruri-v3-310m
+EMBEDDINGS_HOST=0.0.0.0
+EMBEDDINGS_PORT=8081
+EMBEDDINGS_LOG_LEVEL=INFO
+EMBEDDINGS_LOG_JSON=true
+
 RERANKER_MODEL_NAME=cl-nagoya/ruri-v3-reranker-310m
+RERANKER_HOST=0.0.0.0
+RERANKER_PORT=8082
+RERANKER_LOG_LEVEL=INFO
+RERANKER_LOG_JSON=true
 ```
 
-## 必要なもの
+設定値が不足または不正な場合、起動時に明示的に失敗します。
 
-- [sentence-transformers](https://sbert.net/)が利用できる環境
-  - Text embeddings: GPU VRAM1.5GB程度
-  - Rerank: GPU VRAM1.5GB程度
-
-## Docker Composeで実行する場合
-
-buildしてupするだけです。
+## Docker Compose で起動する
 
 ```sh
 cp .env.example .env
@@ -39,166 +77,126 @@ docker compose build
 docker compose up -d
 ```
 
-モデルのキャッシュはホストの`volumes`ディレクトリに保持されます。
+Hugging Face のモデルキャッシュは `./volumes/hf-cache` に保持されます。
 
-## Dockerなしで実行したい場合
-
-### パッケージのインストール
+構成確認だけを行いたい場合は次を利用できます。
 
 ```sh
-$ sudo apt install \
-       build-essential \
-       cmake pkg-config \
-       libprotobuf-dev \
-       libsentencepiece-dev
+docker compose config
 ```
 
-### Pythonライブラリのインストール
+## ローカルで起動する
 
-ライブラリの管理は[uv](https://github.com/astral-sh/uv)を用います。
+依存関係を同期します。
 
 ```sh
-uv sync
+uv sync --group dev
 ```
 
-## つかいかた(Text embeddings)
-
-### Text embeddingサーバーの起動
+embeddings サーバー:
 
 ```sh
-cp .env.example .env
-uv run uvicorn embeddings-api-server:app --host 0.0.0.0 --port 8081
+uv run uvicorn fake_openai_server.main.embeddings:app \
+  --host "${EMBEDDINGS_HOST:-0.0.0.0}" \
+  --port "${EMBEDDINGS_PORT:-8081}"
 ```
 
-Docker Composeの場合は不要です。
-
-### Text embeddingサーバーの動作テスト
+reranker サーバー:
 
 ```sh
-$ curl -v http://127.0.0.1:8081/v1/embeddings \
-    -H 'Content-Type: application/json' \
-    --data-raw '
-{
+uv run uvicorn fake_openai_server.main.reranker:app \
+  --host "${RERANKER_HOST:-0.0.0.0}" \
+  --port "${RERANKER_PORT:-8082}"
+```
+
+## ヘルスチェック
+
+両サービスとも次のエンドポイントを持ちます。
+
+- `/health/live`
+  - プロセスが応答可能かを返します
+- `/health/ready`
+  - モデル初期化が完了しているかを返します
+
+## API
+
+### Embeddings
+
+エンドポイント:
+
+```text
+POST /v1/embeddings
+```
+
+サンプル:
+
+```sh
+curl -s http://127.0.0.1:8081/v1/embeddings \
+  -H 'Content-Type: application/json' \
+  --data-raw '{
     "model": "cl-nagoya/ruri-v3-310m",
     "input": [
-        "文章: てきとうなテキストだよ。",
-        "文章: てきとうなテキストです。"
+      "文章: てきとうなテキストだよ。",
+      "文章: てきとうなテキストです。"
     ]
-}'
+  }'
 ```
 
-```json
-{
-  "object": "list",
-  "data": [
-    {
-      "object": "embedding",
-      "embedding": [
-        0.8186585903167725,
-        -0.47749972343444824,
-        -0.34532251954078674,
-        ...
-        0.15132111310958862,
-        -0.34593141078948975,
-        -0.6007830500602722
-      ],
-      "index": 0
-    },
-    {
-      "object": "embedding",
-      "embedding": [
-        0.958991289138794,
-        -0.322582870721817,
-        -0.35985010862350464,
-        ...
-        0.21222521364688873,
-        -0.33821913599967957,
-        -0.6487450003623962
-      ],
-      "index": 1
-    }
-  ],
-  "model": "cl-nagoya/ruri-v3-310m",
-  "usage": {
-    "prompt_tokens": 0,
-    "total_tokens": 0
-  }
-}
+### Rerank
+
+エンドポイント:
+
+```text
+POST /v1/rerank
 ```
 
-### Difyでの設定(Text embeddings)
-
-- Model Type: Text Embedding
-- Model Name: cl-nagoya/ruri-v3-310m
-- API Key: なし
-- API endpoint URL: <http://サーバーのホスト名・IPアドレス:8081/v1>
-- Model context size: 8192(`cl-nagoya/ruri-v3-310m`の場合)
-- Output Dimensionality: 768(`cl-nagoya/ruri-v3-310m`の場合)
-
-## つかいかた(Rerank)
-
-### Rerankサーバーの起動
+サンプル:
 
 ```sh
-cp .env.example .env
-uv run uvicorn reranker-api-server:app --host 0.0.0.0 --port 8082
-```
-
-Docker Composeの場合は不要です。
-
-### Rerankサーバーの動作テスト
-
-```sh
-$ curl -v http://127.0.0.1:8082/v1/rerank \
-    -H 'Content-Type: application/json' \
-    --data-raw '
-{
+curl -s http://127.0.0.1:8082/v1/rerank \
+  -H 'Content-Type: application/json' \
+  --data-raw '{
     "model": "cl-nagoya/ruri-v3-reranker-310m",
     "query": "山形県の蔵王温泉にある「泉質」はなに？",
     "documents": [
-        "蔵王温泉はどのような特徴を 持つ温泉ですか？",
-        "山形市の蔵王温泉はどのような温泉ですか？",
-        "蔵王温泉の特徴は何ですか？"
+      "蔵王温泉はどのような特徴を持つ温泉ですか？",
+      "山形市の蔵王温泉はどのような温泉ですか？",
+      "蔵王温泉の特徴は何ですか？"
     ]
-}'
+  }'
 ```
 
-```json
-{
-  "results": [
-    {
-      "document": {
-        "text": "蔵王温泉はどのような特徴を 持つ温泉ですか？"
-      },
-      "relevance_score": 0.029905224218964577,
-      "index": 0
-    },
-    {
-      "document": {
-        "text": "山形市の蔵王温泉はどのような温泉ですか？"
-      },
-      "relevance_score": 0.013406982645392418,
-      "index": 1
-    },
-    {
-      "document": {
-        "text": "蔵王温泉の特徴は何ですか？"
-      },
-      "relevance_score": 0.012443745508790016,
-      "index": 2
-    }
-  ],
-  "model": "cl-nagoya/ruri-v3-reranker-310m",
-  "usage": {
-    "total_tokens": 0
-  }
-}
+### OpenAPI
+
+FastAPI の OpenAPI は各サービスで利用できます。
+
+- embeddings: `http://127.0.0.1:8081/openapi.json`
+- reranker: `http://127.0.0.1:8082/openapi.json`
+
+## 検証コマンド
+
+このリポジトリでは `uv` を通じてコマンドを実行します。
+
+```sh
+uv run ruff check .
+uv run ruff format --check .
+uv run ty check
+uv run pytest
+docker compose config
 ```
 
-### Difyでの設定(Rerank)
+## Dify での利用例
+
+Embeddings:
+
+- Model Type: Text Embedding
+- Model Name: `cl-nagoya/ruri-v3-310m`
+- API Key: なし
+- API endpoint URL: `http://<host>:8081/v1`
+
+Rerank:
 
 - Model Type: Rerank
-- Model Name: cl-nagoya/ruri-v3-reranker-310m
+- Model Name: `cl-nagoya/ruri-v3-reranker-310m`
 - API Key: なし
-- API endpoint URL: <http://サーバーのホスト名・IPアドレス:8082/v1>
-- Model context size: 8192(`ruri-v3-reranker-310m`の場合)
+- API endpoint URL: `http://<host>:8082/v1`

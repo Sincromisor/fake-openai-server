@@ -1,66 +1,13 @@
+"""Backward-compatible logging config shim."""
+
+from fake_openai_server.logging import build_logging_config
+
+
 class LoggerConfig:
-    DefaultConfig: dict = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "default": {
-                "format": "[%(asctime)s] [%(levelname)s] [%(filename)s:%(lineno)d:%(funcName)s] [%(name)s] %(message)s",
-            },
-            "access": {
-                "format": "[%(asctime)s] [%(levelname)s] [%(filename)s:%(lineno)d:%(funcName)s] [%(name)s] %(message)s",
-            },
-        },
-        "handlers": {
-            "default": {
-                "formatter": "default",
-                "class": "logging.StreamHandler",
-                "stream": "ext://sys.stdout",
-            },
-            "log_file": {
-                "class": "logging.handlers.RotatingFileHandler",
-                "level": "INFO",
-                "formatter": "default",
-                "filename": "default.log",
-                "maxBytes": 10485760,
-                "backupCount": 100,
-                "encoding": "utf8",
-            },
-        },
-        "loggers": {
-            "uvicorn.error": {
-                "level": "INFO",
-                "handlers": [],
-                "propagate": False,
-            },
-            "uvicorn.access": {
-                "level": "INFO",
-                "handlers": [],
-                "propagate": False,
-            },
-        },
-        "root": {
-            "level": "INFO",
-            "handlers": [],
-            "propagate": False,
-        },
-    }
+    """Compat wrapper for older imports."""
 
     @classmethod
     def generate(cls, log_file: str | None = None, stdout: bool = True) -> dict:
-        newconfig: dict = cls.DefaultConfig.copy()
-        if stdout:
-            newconfig["root"]["handlers"].append("default")
-            newconfig["loggers"]["uvicorn.error"]["handlers"].append("default")
-            newconfig["loggers"]["uvicorn.access"]["handlers"].append("default")
-        if log_file:
-            newconfig["handlers"]["log_file"]["filename"] = log_file
-            newconfig["root"]["handlers"].append("log_file")
-            newconfig["loggers"]["uvicorn.error"]["handlers"].append("log_file")
-            newconfig["loggers"]["uvicorn.access"]["handlers"].append("log_file")
-        return newconfig
+        """Return the shared logging config used by the new package layout."""
 
-
-if __name__ == "__main__":
-    from pprint import pprint
-
-    pprint(LoggerConfig.generate(log_file="api-server.1.log"))
+        return build_logging_config(level="INFO", json_logs=stdout, log_file=log_file)

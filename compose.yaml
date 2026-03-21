@@ -16,8 +16,12 @@ services:
     image: fake-openai-server/embeddings-server:latest
     environment:
       EMBEDDINGS_MODEL_NAME: ${EMBEDDINGS_MODEL_NAME:-cl-nagoya/ruri-v3-310m}
+      EMBEDDINGS_HOST: ${EMBEDDINGS_HOST:-0.0.0.0}
+      EMBEDDINGS_PORT: ${EMBEDDINGS_PORT:-8081}
+      EMBEDDINGS_LOG_LEVEL: ${EMBEDDINGS_LOG_LEVEL:-INFO}
+      EMBEDDINGS_LOG_JSON: ${EMBEDDINGS_LOG_JSON:-true}
     ports:
-      - 8081:8081/tcp
+      - ${EMBEDDINGS_PORT:-8081}:${EMBEDDINGS_PORT:-8081}/tcp
     volumes:
       - ./volumes/hf-cache:/opt/fos/.cache/huggingface
     networks:
@@ -43,8 +47,12 @@ services:
     image: fake-openai-server/reranker-server:latest
     environment:
       RERANKER_MODEL_NAME: ${RERANKER_MODEL_NAME:-cl-nagoya/ruri-v3-reranker-310m}
+      RERANKER_HOST: ${RERANKER_HOST:-0.0.0.0}
+      RERANKER_PORT: ${RERANKER_PORT:-8082}
+      RERANKER_LOG_LEVEL: ${RERANKER_LOG_LEVEL:-INFO}
+      RERANKER_LOG_JSON: ${RERANKER_LOG_JSON:-true}
     ports:
-      - 8082:8082/tcp
+      - ${RERANKER_PORT:-8082}:${RERANKER_PORT:-8082}/tcp
     volumes:
       - ./volumes/hf-cache:/opt/fos/.cache/huggingface
     networks:

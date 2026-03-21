@@ -29,6 +29,7 @@ COPY --chown=${FOS_USER_ID}:${FOS_USER_ID} \
     ./pyproject.toml \
     ./uv.lock \
     ./.python-version \
+    ./src \
     ./README.md \
     ${FOS_USER_DIR}/
 
@@ -76,6 +77,7 @@ COPY --from=builder --chown=${FOS_USER_ID}:${FOS_USER_ID} \
     ${FOS_USER_DIR}/pyproject.toml \
     ${FOS_USER_DIR}/uv.lock \
     ${FOS_USER_DIR}/.python-version \
+    ${FOS_USER_DIR}/src \
     ${FOS_USER_DIR}/
 
 COPY --chmod=755 ./Docker/base-server/setup.sh /opt/setup.sh
