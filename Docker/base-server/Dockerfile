@@ -40,7 +40,7 @@ RUN --mount=type=cache,target=${FOS_USER_DIR}/.cache,uid=1001,gid=1001 \
 #-----------
 # Runner
 #-----------
-FROM nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04 AS runner
+FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04 AS runner
 
 ARG FOS_USER_ID=fos
 ARG FOS_USER_DIR=/opt/fos
